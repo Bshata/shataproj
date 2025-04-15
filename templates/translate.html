@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Real-time sign language translation using AI and computer vision. Translate sign language gestures instantly with high accuracy.">
+    <meta name="keywords" content="sign language, translation, AI, machine learning, gesture recognition">
+    <meta name="author" content="Your Name">
+    <meta property="og:title" content="Sign Language Translator - ShataAI">
+    <meta property="og:description" content="Real-time sign language translation using AI and computer vision.">
+    <meta property="og:type" content="website">
+    <title>Sign Language Translator - ShataAI</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='translate.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-left">
+            <a href="{{ url_for('index') }}" class="nav-logo">
+                <i class="fas fa-sign-language"></i>
+                TauraiNow
+            </a>
+        </div>
+        <div class="nav-right">
+            <div class="nav-buttons">
+                <a href="{{ url_for('translate') }}" class="nav-button active">
+                    <i class="fas fa-language"></i>
+                    Translate
+                </a>
+                <a href="{{ url_for('profile') }}" class="nav-button">
+                    <i class="fas fa-user"></i>
+                    Profile
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Start the camera to begin translating</h1>
+            <p class="subtitle">Use American Sign Language (ASL) hand gestures to communicate. Your signs will be translated in real-time.</p>
+        </div>
+
+        <div class="translate-content">
+            <div class="camera-section">
+                <div class="camera-container">
+                    <video id="camera-stream" playsinline autoplay></video>
+                    <canvas id="hand-canvas" class="hand-overlay"></canvas>
+                    <div class="camera-overlay">
+                        <div class="hand-guide">
+                            <i class="fas fa-hand-paper"></i>
+                            <span>Position your hand in this area</span>
+                        </div>
+                    </div>
+                    <div class="recording-indicator"></div>
+                </div>
+                <div class="camera-buttons">
+                    <button id="start-camera" class="btn btn-primary">
+                        <i class="fa fa-video-camera"></i> Start Camera
+                    </button>
+                    <button id="stop-camera" class="btn btn-danger" style="display: none;">
+                        <i class="fa fa-stop"></i> Stop Camera
+                    </button>
+                </div>
+                
+                <!-- Add troubleshooting tips section that appears when camera fails -->
+                <div class="troubleshooting-tips">
+                    <h3>Camera not working?</h3>
+                    <ol>
+                        <li>Make sure your camera is connected and not in use by another application</li>
+                        <li>Check that you've granted camera permissions to this website</li>
+                        <li>Try refreshing the page</li>
+                        <li>If using Windows, check that the camera is enabled in your privacy settings</li>
+                    </ol>
+                    <a href="#" id="showAdvancedTips">Show advanced troubleshooting</a>
+                </div>
+            </div>
+
+            <div class="translation-section">
+                <div class="translation-header">
+                    <h2><i class="fas fa-language"></i> Translation Output</h2>
+                    <button id="clearTranslation" class="clear-btn">
+                        <i class="fas fa-eraser"></i>
+                        Clear
+                    </button>
+                </div>
+                <div class="translation-box">
+                    <div id="translation-output" class="translation-text">No gesture detected</div>
+                    <div class="confidence-indicator">
+                        <div class="confidence-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="translation-history">
+                    <h3>Recent Translations</h3>
+                    <ul id="translationHistory" class="history-list"></ul>
+                </div>
+            </div>
+
+            <!-- Add this after the translation-container div -->
+            <div id="sentence-container">
+                <h3>Sentence Builder</h3>
+                <div id="sentence-output">Your sentence will appear here</div>
+                <div id="sentence-controls">
+                    <button id="clear-sentence" class="btn">Clear Sentence</button>
+                    <div class="instruction-hint">Hold your hand in position for a few seconds to add a letter to the sentence</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Advanced troubleshooting modal -->
+    <div id="advancedTroubleshooting" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Advanced Camera Troubleshooting</h2>
+            
+            <h3>Browser-specific Instructions</h3>
+            
+            <h4>Chrome</h4>
+            <ol>
+                <li>Click the camera icon in the address bar</li>
+                <li>Select "Allow" for camera access</li>
+                <li>If not visible, go to chrome://settings/content/camera</li>
+                <li>Add this site to the allowed sites list</li>
+            </ol>
+            
+            <h4>Firefox</h4>
+            <ol>
+                <li>Click the camera icon in the address bar</li>
+                <li>Click the "X" to remove the block</li>
+                <li>Refresh the page and allow when prompted</li>
+            </ol>
+            
+            <h4>Edge</h4>
+            <ol>
+                <li>Click the lock/info icon in the address bar</li>
+                <li>Choose "Site permissions"</li>
+                <li>Ensure camera is set to "Allow"</li>
+            </ol>
+            
+            <h3>System Settings</h3>
+            
+            <h4>Windows</h4>
+            <ol>
+                <li>Press Windows+I to open Settings</li>
+                <li>Go to Privacy & Security → Camera</li>
+                <li>Make sure "Camera access" is On</li>
+                <li>Ensure the option "Let apps access your camera" is On</li>
+                <li>Check that your browser is allowed in the app list</li>
+            </ol>
+            
+            <h4>Mac</h4>
+            <ol>
+                <li>Click Apple menu → System Preferences</li>
+                <li>Click Security & Privacy → Privacy → Camera</li>
+                <li>Ensure your browser is checked in the list</li>
+            </ol>
+            
+            <h3>Hardware Issues</h3>
+            <ol>
+                <li>Try unplugging and reconnecting your camera if external</li>
+                <li>Check if the camera works in other applications</li>
+                <li>Check for camera indicator light to ensure it's powered</li>
+                <li>Update camera drivers from manufacturer's website</li>
+            </ol>
+            
+            <button id="diagnosticsBtn" class="btn">Run Camera Diagnostics</button>
+            <div id="diagnosticsOutput" class="diagnostics-output"></div>
+        </div>
+    </div>
+
+    <!-- Add permission help box -->
+    <div id="permission-help" class="permission-help" style="display: none;">
+        <h3>Camera Permission Required</h3>
+        <p>Please allow access to your camera when prompted by your browser.</p>
+        <p>If you accidentally denied permission:</p>
+        <ol>
+            <li>Click the camera icon in your browser's address bar</li>
+            <li>Select "Allow" for camera access</li>
+            <li>Refresh the page</li>
+        </ol>
+    </div>
+
+    <a href="{{ url_for('logout') }}" class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+        Logout
+    </a>
+
+    <script src="{{ url_for('static', filename='translate.js') }}"></script>
+    <script>
+        // Add advanced troubleshooting modal functionality
+        document.getElementById('showAdvancedTips').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('advancedTroubleshooting').style.display = 'block';
+        });
+        
+        document.querySelector('.close').addEventListener('click', function() {
+            document.getElementById('advancedTroubleshooting').style.display = 'none';
+        });
+        
+        window.addEventListener('click', function(e) {
+            if (e.target == document.getElementById('advancedTroubleshooting')) {
+                document.getElementById('advancedTroubleshooting').style.display = 'none';
+            }
+        });
+        
+        // Add diagnostics button handler
+        document.getElementById('diagnosticsBtn').addEventListener('click', async function() {
+            const output = document.getElementById('diagnosticsOutput');
+            output.innerHTML = '<p>Running diagnostics...</p>';
+            
+            try {
+                // Check if navigator.mediaDevices is available
+                if (!navigator.mediaDevices) {
+                    output.innerHTML = '<p class="error">Error: navigator.mediaDevices is not available. Your browser may not support camera access.</p>';
+                    return;
+                }
+                
+                // List available devices
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                if (videoDevices.length === 0) {
+                    output.innerHTML = '<p class="error">No video input devices detected. Please connect a camera and try again.</p>';
+                    return;
+                }
+                
+                let html = `<p>Found ${videoDevices.length} camera device(s):</p><ul>`;
+                videoDevices.forEach((device, index) => {
+                    html += `<li>Camera ${index + 1}: ${device.label || 'Label not available (requires permission)'}</li>`;
+                });
+                html += '</ul>';
+                
+                // Check permissions
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    html += '<p class="success">✓ Camera permissions granted successfully!</p>';
+                    
+                    // Clean up the test stream
+                    stream.getTracks().forEach(track => track.stop());
+                } catch (error) {
+                    html += `<p class="error">✗ Camera permission test failed: ${error.name} - ${error.message}</p>`;
+                }
+                
+                html += '<p>Browser: ' + navigator.userAgent + '</p>';
+                
+                output.innerHTML = html;
+            } catch (error) {
+                output.innerHTML = `<p class="error">Diagnostics error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
